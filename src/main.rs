@@ -1,5 +1,5 @@
 use axum::{
-    body::Body,
+    body::{Body, BoxBody},
     http::{Request, Response, StatusCode},
     routing::get,
     Router,
@@ -29,7 +29,7 @@ where
     B: Send + Sync + 'static,
 {
     type RequestBody = B;
-    type ResponseBody = Body;
+    type ResponseBody = BoxBody;
     type Future = BoxFuture<'static, Result<Request<B>, Response<Self::ResponseBody>>>;
 
     fn authorize(&mut self, mut request: Request<B>) -> Self::Future {
@@ -43,7 +43,7 @@ where
             } else {
                 let unauthorized_response = Response::builder()
                     .status(StatusCode::UNAUTHORIZED)
-                    .body(Body::empty())
+                    .body(axum::body::boxed(Body::empty()))
                     .unwrap();
 
                 Err(unauthorized_response)
